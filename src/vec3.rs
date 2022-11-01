@@ -97,6 +97,18 @@ impl std::ops::Mul<f64> for Vec3 {
     }
 }
 
+impl std::ops::Mul<Vec3> for f64 {
+    type Output = Vec3;
+
+    fn mul(self, _rhs: Vec3) -> Vec3 {
+        Vec3 {
+            x: self * _rhs.x,
+            y: self * _rhs.y,
+            z: self * _rhs.z
+        }
+    }
+}
+
 impl std::ops::Div<f64> for Vec3 {
     type Output = Vec3;
 
@@ -135,6 +147,16 @@ impl std::ops::DivAssign<f64> for Vec3 {
 // Type aliases for vec3
 pub type Point3 = Vec3;   // 3d point
 pub type Color = Vec3;    // rgb color
+
+impl Color {
+    pub fn translate(&self) -> Vec3 {    // give better name
+        Vec3 {
+            x: 255.999 * self.x,
+            y: 255.999 * self.y,
+            z: 255.999 * self.z
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
