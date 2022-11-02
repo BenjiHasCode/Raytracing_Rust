@@ -47,13 +47,22 @@ impl Vec3 {
     pub fn random_in_unit_sphere() -> Vec3 {
         loop {
             let p = Vec3::random(-1.0, 1.0);
-            /*if p.length_squared() >= 1.0 {
-                continue
-            } */
             if p.length_squared() < 1.0 {
                 return p;
             }
         }
+    }
+
+    pub fn random_unit_vector() -> Vec3 {
+        Self::random_in_unit_sphere().unit_vector()
+    }
+
+    pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
+        let in_unit_sphere = Self::random_in_unit_sphere();
+        if in_unit_sphere.dot(normal) > 0.0 {
+            return in_unit_sphere;
+        }
+        -in_unit_sphere
     }
 }
 
