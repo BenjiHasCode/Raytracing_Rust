@@ -2,10 +2,17 @@ mod vec3;
 mod ray; // TODO how to import in Rust??
 mod hittable_list;
 mod hittable;
+mod sphere;
 
+use std::f64::INFINITY;
+
+use hittable::HitRecord;
+use hittable::Hittable;
+use hittable_list::HittableList;
 use ray::Ray;
 use vec3::Color;
 use vec3::Point3;
+use sphere::Sphere;
 
 use crate::vec3::Vec3;
 
@@ -13,9 +20,14 @@ use crate::vec3::Vec3;
 fn main() {
     // Image
     const ASPECT_RATIO: f32 = 16.0 / 9.0;
-    const WIDTH: u32 = 1920;
+    const WIDTH: u32 = 1920 / 4;
     const HEIGHT: u32 = (WIDTH as f32 / ASPECT_RATIO) as u32;
     let mut imgbuf = image::ImageBuffer::new(WIDTH, HEIGHT);
+
+    // World
+    let mut world = HittableList::new();
+    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera
     let viewport_height = 2.0;
@@ -34,7 +46,7 @@ fn main() {
             let u = i as f64 / (WIDTH-1) as f64;
             let v = j as f64 / (HEIGHT -1) as f64;
             let r = Ray::new(origin, lower_left_corner + u*horizontal + v*vertical - origin);
-            let color = ray_color(&r).translate();
+            let color = ray_color(&r, &world).translate();
 
             imgbuf[(i, HEIGHT - j - 1)] = image::Rgb([color.x as u8, color.y as u8, color.z as u8]);
         }
@@ -44,29 +56,13 @@ fn main() {
     imgbuf.save("render.png").unwrap();
 }
 
-fn ray_color(r: &Ray) -> Color {
-    let t = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, r);
-    if t > 0.0 {
-        let normal = (r.at(t) - Vec3::new(0.0, 0.0, -1.0)).unit_vector();
-        return 0.5*Color::new(normal.x+1.0, normal.y+1.0, normal.z+1.0)
+fn ray_color(r: &Ray, world: &HittableList) -> Color {
+    let mut rec = HitRecord::default();
+    if world.hit(r, 0.0, INFINITY, &mut rec) {
+        return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0))
     }
+
     let unit_direction = r.direction().unit_vector();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    
-    (1.0-t)*Color::new(1.0, 1.0, 1.0) + t*Color::new(0.5, 0.7, 1.0)
-}
-
-fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> f64 {
-    let oc = r.origin() - *center;
-    let a = r.direction().length_squared();
-    let half_b = oc.dot(&r.direction());
-    let c = oc.length_squared() - radius*radius;
-    let discriminant = half_b*half_b - a*c;
-
-    if discriminant < 0.0 {
-        -1.0
-    }
-    else {
-        (-half_b - discriminant.sqrt()) / a
-    }
+    let t = 0.5*(unit_direction.y + 1.0);
+    return (1.0-t)*Color::new(1.0, 1.0, 1.0) + t*Color::new(0.5, 0.7, 1.0);
 }
