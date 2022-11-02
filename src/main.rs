@@ -22,9 +22,9 @@ use crate::util::random_double;
 fn main() {
     // Image
     const ASPECT_RATIO: f32 = 16.0 / 9.0;
-    const WIDTH: u32 = 1920;
+    const WIDTH: u32 = 256;//1920;
     const HEIGHT: u32 = (WIDTH as f32 / ASPECT_RATIO) as u32;
-    const SAMPLES_PER_PIXEL: u32 = 100;
+    const SAMPLES_PER_PIXEL: u32 = 10000;
     const MAX_DEPTH: u32 = 50;
     let mut imgbuf = image::ImageBuffer::new(WIDTH, HEIGHT);
 
@@ -65,7 +65,7 @@ fn ray_color(r: &Ray, world: &HittableList, depth: u32) -> Color {
 
     let mut rec = HitRecord::default();
 
-    if world.hit(r, 0.0, INFINITY, &mut rec) {
+    if world.hit(r, 0.001, INFINITY, &mut rec) {
         let target = rec.p + rec.normal + Vec3::random_in_unit_sphere();
         return 0.5 * ray_color(&Ray::new(rec.p, target - rec.p), world, depth-1);
     }

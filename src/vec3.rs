@@ -177,9 +177,9 @@ impl Color {
 
         // Divide the color by the number of sample
         let scale = 1.0 / samples_per_pixel as f64;
-        r *= scale;
-        g *= scale;
-        b *= scale;
+        r = (scale * r).sqrt();
+        g = (scale * g).sqrt();
+        b = (scale * b).sqrt();
 
         Color {
             x: 256.0 * clamp(r, 0.0, 0.999),
