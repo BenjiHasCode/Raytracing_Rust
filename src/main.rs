@@ -3,6 +3,8 @@ mod ray; // TODO how to import in Rust??
 mod hittable_list;
 mod hittable;
 mod sphere;
+mod camera;
+mod util;
 
 use std::f64::INFINITY;
 
@@ -14,14 +16,16 @@ use vec3::Color;
 use vec3::Point3;
 use sphere::Sphere;
 
-use crate::vec3::Vec3;
+use crate::camera::Camera;
+use crate::util::random_double;
 
 
 fn main() {
     // Image
     const ASPECT_RATIO: f32 = 16.0 / 9.0;
-    const WIDTH: u32 = 1920 / 4;
+    const WIDTH: u32 = 1920 / 10;
     const HEIGHT: u32 = (WIDTH as f32 / ASPECT_RATIO) as u32;
+    const SAMPLES_PER_PIXEL: u32 = 100;
     let mut imgbuf = image::ImageBuffer::new(WIDTH, HEIGHT);
 
     // World
@@ -30,25 +34,23 @@ fn main() {
     world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera
-    let viewport_height = 2.0;
-    let viewport_width = ASPECT_RATIO * viewport_height;
-    let focal_length = 1.0;
-
-    let origin = Point3::new(0.0, 0.0, 0.0);
-    let horizontal = Vec3::new(viewport_width as f64, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, viewport_height as f64, 0.0);
-    let lower_left_corner = origin - horizontal/2.0 - vertical/2.0 - Vec3::new(0.0, 0.0, focal_length);
+    let cam = Camera::new();
 
     // Render
     for j in 0..HEIGHT {
         println!("Lines remaining: {}", HEIGHT - j);
         for i in 0..WIDTH {
-            let u = i as f64 / (WIDTH-1) as f64;
-            let v = j as f64 / (HEIGHT -1) as f64;
-            let r = Ray::new(origin, lower_left_corner + u*horizontal + v*vertical - origin);
-            let color = ray_color(&r, &world).translate();
+            let mut pixel_color = Color::new(0.0, 0.0, 0.0);
 
-            imgbuf[(i, HEIGHT - j - 1)] = image::Rgb([color.x as u8, color.y as u8, color.z as u8]);
+            for _s in 0..SAMPLES_PER_PIXEL {
+                let u = (i as f64 + random_double(0.0, 1.0)) / (WIDTH-1) as f64;
+                let v = (j as f64 + random_double(0.0, 1.0)) / (HEIGHT-1) as f64;
+                let r = cam.get_ray(u, v);
+                pixel_color += ray_color(&r, &world)
+            }
+
+            let c = pixel_color.translate(SAMPLES_PER_PIXEL);
+            imgbuf[(i, HEIGHT - j - 1)] = image::Rgb([c.x as u8, c.y as u8, c.z as u8]);
         }
     }
 

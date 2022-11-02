@@ -1,3 +1,5 @@
+use crate::util::clamp;
+
 #[derive(Debug, PartialEq, Clone, Copy, Default)] //what is partialeq?
 pub struct Vec3 {
     pub x: f64,
@@ -149,11 +151,21 @@ pub type Point3 = Vec3;   // 3d point
 pub type Color = Vec3;    // rgb color
 
 impl Color {
-    pub fn translate(&self) -> Vec3 {    // give better name
-        Vec3 {
-            x: 255.999 * self.x,
-            y: 255.999 * self.y,
-            z: 255.999 * self.z
+    pub fn translate(&self, samples_per_pixel: u32) -> Color {    // give better name
+        let mut r = self.x;
+        let mut g = self.y;
+        let mut b = self.z;
+
+        // Divide the color by the number of sample
+        let scale = 1.0 / samples_per_pixel as f64;
+        r *= scale;
+        g *= scale;
+        b *= scale;
+
+        Color {
+            x: 256.0 * clamp(r, 0.0, 0.999),
+            y: 256.0 * clamp(g, 0.0, 0.999),
+            z: 256.0 * clamp(b, 0.0, 0.999)
         }
     }
 }
