@@ -1,4 +1,4 @@
-use crate::util::clamp;
+use crate::util::{clamp, random_double};
 
 #[derive(Debug, PartialEq, Clone, Copy, Default)] //what is partialeq?
 pub struct Vec3 {
@@ -12,19 +12,26 @@ impl Vec3 {
         Vec3 {x, y, z}
     }
 
-    // length
+    pub fn random(min: f64, max: f64) -> Vec3 {
+        Vec3::new(
+            random_double(min, max),
+            random_double(min, max),
+            random_double(min, max)
+        )
+    }
+
     pub fn length(&self) -> f64 {
         f64::sqrt(self.length_squared())
     }
-    // length_squared
+
     pub fn length_squared(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
-    // dot
+
     pub fn dot(&self, other: &Vec3) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
-    // cross
+
     pub fn cross(&self, other: &Vec3) -> Vec3 {
         Vec3 {
             x: self.y * other.z - self.z * other.y,
@@ -32,9 +39,21 @@ impl Vec3 {
             z: self.x * other.y - self.y * other.x
         }
     }
-    // unit_vector
+
     pub fn unit_vector(&self) -> Vec3 {
         *self / self.length() // Todo is this right
+    }
+
+    pub fn random_in_unit_sphere() -> Vec3 {
+        loop {
+            let p = Vec3::random(-1.0, 1.0);
+            /*if p.length_squared() >= 1.0 {
+                continue
+            } */
+            if p.length_squared() < 1.0 {
+                return p;
+            }
+        }
     }
 }
 
