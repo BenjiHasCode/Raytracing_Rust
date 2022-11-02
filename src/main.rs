@@ -1,5 +1,7 @@
 mod vec3;
 mod ray; // TODO how to import in Rust??
+mod hittable_list;
+mod hittable;
 
 use ray::Ray;
 use vec3::Color;
