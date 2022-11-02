@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq, Clone, Copy)] //what is partialeq?
+#[derive(Debug, PartialEq, Clone, Copy, Default)] //what is partialeq?
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
