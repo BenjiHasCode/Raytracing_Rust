@@ -64,6 +64,16 @@ impl Vec3 {
         }
         -in_unit_sphere
     }
+
+    // Return true if the vector is close to zero in all dimensions
+    pub fn near_zero(&self) -> bool {
+        let s: f64 = 1e-8;
+        (self.x.abs() < s) && (self.y.abs() < s) && (self.z.abs() < s)
+    }
+
+    pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+        *v - 2.0*v.dot(n)*(*n)
+    }
 }
 
 
