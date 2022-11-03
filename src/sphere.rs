@@ -42,6 +42,6 @@ impl Hittable for Sphere {
 
 impl Sphere {
     pub fn new(center: Point3, radius: f64, material: &Rc<Material>) -> Sphere {
-        Sphere { center, radius, material: Rc::clone(&material) }
+        Sphere { center, radius, material: Rc::clone(material) }
     }
 }

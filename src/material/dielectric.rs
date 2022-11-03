@@ -14,14 +14,12 @@ impl Dielectric {
         let sin_theta = f64::sqrt(1.0 - cos_theta*cos_theta);
 
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
-        let direction;
-
-        if cannot_refract || Dielectric::reflectance(cos_theta, refraction_ratio) > random_double(0.0, 1.0) {
-            direction = Vec3::reflect(&unit_direction, &rec.normal);
+        let direction = if cannot_refract || Dielectric::reflectance(cos_theta, refraction_ratio) > random_double(0.0, 1.0) {
+            Vec3::reflect(&unit_direction, &rec.normal)
         } 
         else {
-            direction = Vec3::refract(&unit_direction, &rec.normal, refraction_ratio);
-        }
+            Vec3::refract(&unit_direction, &rec.normal, refraction_ratio)
+        };
 
         *scattered = Ray::new(rec.p, direction);
         true

@@ -71,7 +71,7 @@ fn main() {
 }
 
 fn ray_color(r: &Ray, world: &HittableList, depth: u32) -> Color {
-    if depth <= 0 {
+    if depth == 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
 
@@ -88,7 +88,7 @@ fn ray_color(r: &Ray, world: &HittableList, depth: u32) -> Color {
 
     let unit_direction = r.direction().unit_vector();
     let t = 0.5*(unit_direction.y + 1.0);
-    return (1.0-t)*Color::new(1.0, 1.0, 1.0) + t*Color::new(0.5, 0.7, 1.0);
+    (1.0-t)*Color::new(1.0, 1.0, 1.0) + t*Color::new(0.5, 0.7, 1.0)
 }
 
 fn random_scene() -> HittableList {
