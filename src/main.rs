@@ -9,6 +9,7 @@ mod material;
 
 
 use std::f64::INFINITY;
+use std::rc::Rc;
 
 use hittable::HitRecord;
 use hittable::Hittable;
@@ -19,6 +20,7 @@ use sphere::Sphere;
 use material::Material;
 
 use crate::camera::Camera;
+use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
 use crate::material::metal::Metal;
 use crate::util::random_double;
@@ -27,7 +29,7 @@ use crate::util::random_double;
 fn main() {
     // Image
     const ASPECT_RATIO: f32 = 16.0 / 9.0;
-    const WIDTH: u32 = 1920;
+    const WIDTH: u32 = 1920/2;
     const HEIGHT: u32 = (WIDTH as f32 / ASPECT_RATIO) as u32;
     const SAMPLES_PER_PIXEL: u32 = 100;
     const MAX_DEPTH: u32 = 50;
@@ -36,15 +38,16 @@ fn main() {
     // World
     let mut world = HittableList::new();
 
-    let material_ground = Material::Lambertian(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Material::Lambertian(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
-    let material_left = Material::Metal(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
-    let material_right = Material::Metal(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
+    let material_ground = Rc::new(Material::Lambertian(Lambertian::new(Color::new(0.8, 0.8, 0.0))));
+    let material_center = Rc::new(Material::Lambertian(Lambertian::new(Color::new(0.1, 0.2, 0.5))));
+    let material_left = Rc::new(Material::Dielectric(Dielectric::new(1.5)));
+    let material_right = Rc::new(Material::Metal(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0)));
 
-    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, material_ground)));
-    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, material_center)));
-    world.add(Box::new(Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, material_left)));
-    world.add(Box::new(Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, material_right)));
+    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, &material_ground)));
+    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, &material_center)));
+    world.add(Box::new(Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, &material_left)));
+    world.add(Box::new(Sphere::new(Point3::new(-1.0, 0.0, -1.0), -0.4, &material_left)));
+    world.add(Box::new(Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, &material_right)));
 
 
 

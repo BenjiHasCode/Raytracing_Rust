@@ -11,7 +11,7 @@ impl Metal {
         *scattered = Ray::new(rec.p, reflected + self.fuzz*Vec3::random_in_unit_sphere());
         *attenuation = self.albedo;
         
-        scattered.direction().dot(&rec.normal) > 0.0
+        Vec3::dot(&scattered.direction(), &rec.normal) > 0.0
     }
 }
 

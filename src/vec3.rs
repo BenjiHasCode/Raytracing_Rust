@@ -28,15 +28,15 @@ impl Vec3 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
-    pub fn dot(&self, other: &Vec3) -> f64 {
-        self.x * other.x + self.y * other.y + self.z * other.z
+    pub fn dot(i: &Vec3, other: &Vec3) -> f64 {
+        i.x * other.x + i.y * other.y + i.z * other.z
     }
 
-    pub fn cross(&self, other: &Vec3) -> Vec3 {
+    pub fn cross(i: &Vec3, other: &Vec3) -> Vec3 {
         Vec3 {
-            x: self.y * other.z - self.z * other.y,
-            y: self.z * other.x - self.x * other.z,
-            z: self.x * other.y - self.y * other.x
+            x: i.y * other.z - i.z * other.y,
+            y: i.z * other.x - i.x * other.z,
+            z: i.x * other.y - i.y * other.x
         }
     }
 
@@ -59,7 +59,7 @@ impl Vec3 {
 
     pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
         let in_unit_sphere = Self::random_in_unit_sphere();
-        if in_unit_sphere.dot(normal) > 0.0 {
+        if Vec3::dot(&in_unit_sphere, normal) > 0.0 {
             return in_unit_sphere;
         }
         -in_unit_sphere
@@ -72,7 +72,16 @@ impl Vec3 {
     }
 
     pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
-        *v - 2.0*v.dot(n)*(*n)
+        *v - 2.0*Vec3::dot(v, n)*(*n)
+    }
+
+    pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
+        let uv = *uv;
+        let cos_theta = f64::min(Vec3::dot(&-uv, n), 1.0);
+        let r_out_perp = etai_over_etat * (uv + cos_theta*(*n));    // borrowing and dereference looks really ugly here: refactor
+        let r_out_parallel = -f64::sqrt(f64::abs(1.0 - r_out_perp.length_squared())) * (*n);
+
+        r_out_perp + r_out_parallel
     }
 }
 
