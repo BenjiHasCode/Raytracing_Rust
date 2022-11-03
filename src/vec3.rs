@@ -65,6 +65,15 @@ impl Vec3 {
         -in_unit_sphere
     }
 
+    pub fn random_in_unit_disk() -> Vec3 {
+        loop {
+            let p = Vec3::new(random_double(-1.0, 1.0), random_double(-1.0, 1.0), 0.0);
+            if p.length_squared() < 1.0 {
+                return p;
+            }
+        }
+    }
+
     // Return true if the vector is close to zero in all dimensions
     pub fn near_zero(&self) -> bool {
         let s: f64 = 1e-8;
