@@ -10,6 +10,7 @@ mod material;
 
 use std::f64::INFINITY;
 use std::rc::Rc;
+use std::time::Instant;
 
 use hittable::HitRecord;
 use hittable::Hittable;
@@ -48,6 +49,8 @@ fn main() {
 
     let cam = Camera::new(look_from, look_at, vup, 20.0, ASPECT_RATIO, aperture, dist_to_focus);
 
+    let start = Instant::now();
+
     // Render
     for j in 0..HEIGHT {
         println!("Lines remaining: {}", HEIGHT - j);
@@ -65,6 +68,9 @@ fn main() {
             imgbuf[(i, HEIGHT - j - 1)] = image::Rgb([c.x as u8, c.y as u8, c.z as u8]);
         }
     }
+
+    let duration = start.elapsed().as_secs();
+    println!("Render took: {} seconds", duration);
 
     // Save image
     imgbuf.save("render.png").unwrap();
