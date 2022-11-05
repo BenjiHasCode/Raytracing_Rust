@@ -11,12 +11,12 @@ impl Hittable for HittableList {
         let mut closest_so_far = t_max;
 
         // iterate over list
-        for object in self.iter() {
+        self.iter().for_each(|object| {
             if let Some(temp_rec) = object.hit(r, t_min, closest_so_far) {
                 closest_so_far = temp_rec.t;
                 rec = Some(temp_rec);
             }
-        }
+        });
 
         rec
     }

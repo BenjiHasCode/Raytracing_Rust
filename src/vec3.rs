@@ -207,7 +207,7 @@ pub type Point3 = Vec3;   // 3d point
 pub type Color = Vec3;    // rgb color
 
 impl Color {
-    pub fn translate(&self, samples_per_pixel: u32) -> Color {    // give better name
+    pub fn to_u8_rgb(&self, samples_per_pixel: u32) -> (u8, u8 ,u8) {    // give better name
         let mut r = self.x;
         let mut g = self.y;
         let mut b = self.z;
@@ -218,11 +218,12 @@ impl Color {
         g = (scale * g).sqrt();
         b = (scale * b).sqrt();
 
-        Color {
-            x: 256.0 * clamp(r, 0.0, 0.999),
-            y: 256.0 * clamp(g, 0.0, 0.999),
-            z: 256.0 * clamp(b, 0.0, 0.999)
-        }
+        // rgb tuple
+        (
+            (256.0 * clamp(r, 0.0, 0.999)) as u8,
+            (256.0 * clamp(g, 0.0, 0.999)) as u8,
+            (256.0 * clamp(b, 0.0, 0.999)) as u8
+        )
     }
 }
 

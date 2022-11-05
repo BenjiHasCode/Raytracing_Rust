@@ -69,10 +69,10 @@ fn main() {
                 let r = cam.get_ray(u, v);
                 pixel_color += ray_color(&r, &world, MAX_DEPTH);
             }
-            let c = pixel_color.translate(SAMPLES_PER_PIXEL);
-            chunk[0] = c.x as u8;
-            chunk[1] = c.y as u8;
-            chunk[2] = c.z as u8;
+            let (r, g, b) = pixel_color.to_u8_rgb(SAMPLES_PER_PIXEL);
+            chunk[0] = r;
+            chunk[1] = g;
+            chunk[2] = b;
         });
 
     // Print how long it took to render
@@ -144,7 +144,7 @@ fn random_scene() -> HittableList {
     let material2: Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
     world.push(Box::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, &material2)));
 
-    let material3: Arc<dyn Material> = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.1));
+    let material3: Arc<dyn Material> = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.05));
     world.push(Box::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, &material3)));
 
     world
