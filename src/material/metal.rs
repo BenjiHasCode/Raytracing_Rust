@@ -1,17 +1,22 @@
 use crate::{vec3::{Color, Vec3}, ray::Ray, hittable::HitRecord};
 
+use super::Material;
+
 pub struct Metal {
     albedo: Color,
     fuzz: f64
 }
 
-impl Metal {
-    pub fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
+impl Material for Metal {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let reflected = Vec3::reflect(&r_in.direction().unit_vector(), &rec.normal);
-        *scattered = Ray::new(rec.p, reflected + self.fuzz*Vec3::random_in_unit_sphere());
-        *attenuation = self.albedo;
+        let scattered = Ray::new(rec.p, reflected + self.fuzz*Vec3::random_in_unit_sphere());
         
-        Vec3::dot(&scattered.direction(), &rec.normal) > 0.0
+        if Vec3::dot(&scattered.direction(), &rec.normal) > 0.0 {
+            Some((self.albedo, scattered))
+        } else {
+            None
+        }
     }
 }
 

@@ -1,30 +1,9 @@
-use crate::{hittable::HitRecord, vec3::{Color, Vec3}, ray::Ray};
-
-use self::{metal::Metal, lambertian::Lambertian, dielectric::Dielectric};
+use crate::{hittable::HitRecord, vec3::{Color}, ray::Ray};
 
 pub mod lambertian;
 pub mod metal;
 pub mod dielectric;
 
-pub enum Material {
-    Lambertian(Lambertian),
-    Metal(Metal),
-    Dielectric(Dielectric)
-}
-
-impl Material {
-    pub fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
-        match self {
-            Material::Lambertian(lambertian) => lambertian.scatter(rec, attenuation, scattered),
-            Material::Metal(metal) => metal.scatter(r_in, rec, attenuation, scattered),
-            Material::Dielectric(dielectric) => dielectric.scatter(r_in, rec, attenuation, scattered)
-        }
-    }
-}
-
-impl Default for Material {
-    fn default() -> Self {
-
-        Material::Lambertian(Lambertian::new(Vec3::default()))
-    }
+pub trait Material : Send + Sync {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>;
 }
