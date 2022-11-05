@@ -36,13 +36,7 @@ fn main() {
     const HEIGHT: u32 = (WIDTH as f64 / ASPECT_RATIO) as u32;
     const SAMPLES_PER_PIXEL: u32 = 50;
     const MAX_DEPTH: u32 = 50;
-   
-    let mut pixels = vec![];
-    for y in (0..HEIGHT).rev() {
-        for x in 0..WIDTH {
-            pixels.push((y as f64, x as f64));
-        }
-    }
+    const BYTES_PER_PIXEL: usize = 3;
 
     // World
     let world = random_scene();
@@ -58,19 +52,30 @@ fn main() {
 
     let start = Instant::now();
     // Render
-    let bytes: Vec<u8> = pixels.par_iter().flat_map(|(y, x)| {
-        let mut pixel_color = Color::new(0.0, 0.0, 0.0);
+    let mut bytes = vec![0u8; HEIGHT as usize * WIDTH as usize * BYTES_PER_PIXEL];
+    bytes
+        // take mutable chunk of three items
+        .par_chunks_mut(BYTES_PER_PIXEL)
+        // turn into a parralel iterator using Rayon
+        .into_par_iter()
+        // enumerate() changes the closure argument from |item| => |(index, item)|
+        .enumerate()
+        .for_each(|(idx, chunk)| {
+            let y = (HEIGHT as usize - idx / WIDTH as usize) as f64;
+            let x = (idx % WIDTH as usize) as f64;
+            let mut pixel_color = Color::new(0.0, 0.0, 0.0);
 
-        for _ in 0..SAMPLES_PER_PIXEL {
-            let u = (x + random_double(0.0, 1.0)) / (WIDTH-1) as f64;
-            let v = (y + random_double(0.0, 1.0)) / (HEIGHT-1) as f64;
-            let r = cam.get_ray(u, v);
-            pixel_color += ray_color(&r, &world, MAX_DEPTH);
-        }
-
-        let c = pixel_color.translate(SAMPLES_PER_PIXEL);
-        vec![c.x as u8, c.y as u8, c.z as u8]
-    }).collect();
+            for _ in 0..SAMPLES_PER_PIXEL {
+                let u = (x + random_double(0.0, 1.0)) / (WIDTH-1) as f64;
+                let v = (y + random_double(0.0, 1.0)) / (HEIGHT-1) as f64;
+                let r = cam.get_ray(u, v);
+                pixel_color += ray_color(&r, &world, MAX_DEPTH);
+            }
+            let c = pixel_color.translate(SAMPLES_PER_PIXEL);
+            chunk[0] = c.x as u8;
+            chunk[1] = c.y as u8;
+            chunk[2] = c.z as u8;
+        });
 
     // Print how long it took to render
     let duration = start.elapsed().as_secs();
