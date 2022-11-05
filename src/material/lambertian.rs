@@ -7,7 +7,7 @@ pub struct Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
         
         // Catch degenerate scatter direction
@@ -15,7 +15,7 @@ impl Material for Lambertian {
             scatter_direction = rec.normal;
         }
         
-        let scattered = Ray::new(rec.p, scatter_direction);
+        let scattered = Ray::new(rec.p, scatter_direction, r_in.time());
         
         Some((self.albedo, scattered))
     }

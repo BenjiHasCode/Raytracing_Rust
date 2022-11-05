@@ -10,7 +10,7 @@ pub struct Metal {
 impl Material for Metal {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let reflected = Vec3::reflect(&r_in.direction().unit_vector(), &rec.normal);
-        let scattered = Ray::new(rec.p, reflected + self.fuzz*Vec3::random_in_unit_sphere());
+        let scattered = Ray::new(rec.p, reflected + self.fuzz*Vec3::random_in_unit_sphere(), r_in.time());
         
         if Vec3::dot(&scattered.direction(), &rec.normal) > 0.0 {
             Some((self.albedo, scattered))

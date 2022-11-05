@@ -28,7 +28,7 @@ impl Material for Dielectric {
             Vec3::refract(&unit_direction, &rec.normal, refraction_ratio)
         };
 
-        let scattered = Ray::new(rec.p, direction);
+        let scattered = Ray::new(rec.p, direction, r_in.time());
         
         Some((Color::new(1.0, 1.0, 1.0), scattered))
     }

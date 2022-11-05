@@ -16,7 +16,7 @@ use hittable_list::HittableList;
 use ray::Ray;
 use rayon::prelude::*;
 use vec3::{Point3, Color};
-use sphere::Sphere;
+use sphere::{Sphere, MovingSphere};
 use material::Material;
 
 use crate::camera::Camera;
@@ -29,10 +29,10 @@ use crate::vec3::Vec3;
 
 fn main() {
     // Image
-    const ASPECT_RATIO: f64 = 3.0 / 2.0;
-    const WIDTH: u32 = 1200;
+    const ASPECT_RATIO: f64 = 16.0 / 9.0;
+    const WIDTH: u32 = 400*2;
     const HEIGHT: u32 = (WIDTH as f64 / ASPECT_RATIO) as u32;
-    const SAMPLES_PER_PIXEL: u32 = 10;
+    const SAMPLES_PER_PIXEL: u32 = 100;
     const MAX_DEPTH: u32 = 50;
     const BYTES_PER_PIXEL: usize = 3;
 
@@ -46,7 +46,17 @@ fn main() {
     let dist_to_focus = 10.0;
     let aperture = 0.1;
 
-    let cam = Camera::new(look_from, look_at, vup, 20.0, ASPECT_RATIO, aperture, dist_to_focus);
+    let cam = Camera::new(
+        look_from,
+        look_at,
+        vup,
+        20.0,
+        ASPECT_RATIO,
+        aperture,
+        dist_to_focus,
+        0.0,
+        1.0
+    );
 
     let start = Instant::now();
     // Render
@@ -120,7 +130,8 @@ fn random_scene() -> HittableList {
                     // diffuse
                     let albedo = Color::random(0.0, 1.0) * Color::random(0.0, 1.0);
                     sphere_material = Arc::new(Lambertian::new(albedo));
-                    world.push(Box::new(Sphere::new(center, 0.2, &sphere_material)))
+                    let center2 = center + Vec3::new(0.0, random_double(0.0, 0.5), 0.0);
+                    world.push(Box::new(MovingSphere::new(center, center2, 0.0, 1.0, 0.2, &sphere_material)))
                 }
                 else if choose_mat < 0.95 {
                     // metal

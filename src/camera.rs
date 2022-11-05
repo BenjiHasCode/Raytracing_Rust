@@ -1,4 +1,4 @@
-use crate::{vec3::{Vec3, Point3}, ray::Ray, util::degrees_to_radians};
+use crate::{vec3::{Vec3, Point3}, ray::Ray, util::{degrees_to_radians, random_double}};
 
 pub struct Camera {
     origin: Point3,
@@ -7,7 +7,9 @@ pub struct Camera {
     lower_left_corner: Vec3,
     u: Vec3,
     v: Vec3, 
-    lens_radius: f64
+    lens_radius: f64,
+    time0: f64, // Shutter open/close times // create time range struct?
+    time1: f64
 }
 
 impl Camera {
@@ -16,7 +18,8 @@ impl Camera {
         let offset = self.u*rd.x + self.v*rd.y;
         Ray::new(
             self.origin + offset,
-            self.lower_left_corner + s*self.horizontal + t*self.vertical - self.origin - offset
+            self.lower_left_corner + s*self.horizontal + t*self.vertical - self.origin - offset,
+            random_double(self.time0, self.time1)
         )
     }
 
@@ -27,7 +30,9 @@ impl Camera {
         vfov: f64,
         aspect_ratio: f64,
         aperture: f64,
-        focus_dist: f64
+        focus_dist: f64,
+        time0: f64,
+        time1: f64
     ) -> Camera {
         let theta = degrees_to_radians(vfov);
         let h = f64::tan(theta/2.0);
@@ -51,7 +56,9 @@ impl Camera {
             lower_left_corner,
             u,
             v,
-            lens_radius
+            lens_radius,
+            time0,
+            time1
         }
     }
 }
