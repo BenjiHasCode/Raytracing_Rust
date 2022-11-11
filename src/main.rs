@@ -8,6 +8,7 @@ mod util;
 mod material;
 mod aabb;
 mod bvh;
+mod texture;
 
 use std::f64::INFINITY;
 use std::sync::Arc;
@@ -17,6 +18,7 @@ use hittable::Hittable;
 use hittable_list::HittableList;
 use ray::Ray;
 use rayon::prelude::*;
+use texture::{CheckerTexture, Texture};
 use vec3::{Point3, Color};
 use sphere::{Sphere, MovingSphere};
 use material::Material;
@@ -39,26 +41,52 @@ fn main() {
     const BYTES_PER_PIXEL: usize = 3;
 
     // World
-    let world = random_scene();
+    let world;
 
+
+    let look_from;
+    let look_at;
+    let vfov;
+    let mut aperture = 0.0;
     // Camera
-    let look_from = Point3::new(13.0, 2.0, 3.0);
-    let look_at = Point3::new(0.0, 0.0, 0.0);
+    let scene = 2;
+    match scene {
+        1 => {
+            world = random_scene();
+            look_from = Point3::new(13.0, 2.0, 3.0);
+            look_at = Point3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+            aperture = 0.1;
+        },
+        2 => {
+            world = two_spheres();
+            look_from = Point3::new(13.0, 2.0, 3.0);
+            look_at = Point3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+        },
+        _ => {
+            world = random_scene();
+            look_from = Point3::new(13.0, 2.0, 3.0);
+            look_at = Point3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+            aperture = 0.1;
+        }
+    }
+
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
-    let aperture = 0.1;
-
     let cam = Camera::new(
         look_from,
         look_at,
         vup,
-        20.0,
+        vfov,
         ASPECT_RATIO,
         aperture,
         dist_to_focus,
         0.0,
         1.0
     );
+
 
     let start = Instant::now();
     // Render
@@ -116,7 +144,8 @@ fn ray_color(r: &Ray, world: &HittableList, depth: u32) -> Color {
 fn random_scene() -> HittableList {
     let mut world = HittableList::new();
 
-    let ground_material: Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let check_tex: Arc<dyn Texture> = Arc::new(CheckerTexture::new(Color::new(0.2, 0.3, 0.1), Color::new(0.9, 0.9, 0.9)));
+    let ground_material: Arc<dyn Material> = Arc::new(Lambertian::new_texture(&check_tex));
     world.push(Arc::new(Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, &ground_material)));
 
 
@@ -131,7 +160,7 @@ fn random_scene() -> HittableList {
                 if choose_mat < 0.8 {
                     // diffuse
                     let albedo = Color::random(0.0, 1.0) * Color::random(0.0, 1.0);
-                    sphere_material = Arc::new(Lambertian::new(albedo));
+                    sphere_material = Arc::new(Lambertian::new_color(albedo));
                     let center2 = center + Vec3::new(0.0, random_double(0.0, 0.5), 0.0);
                     world.push(Arc::new(MovingSphere::new(center, center2, 0.0, 1.0, 0.2, &sphere_material)))
                 }
@@ -154,11 +183,22 @@ fn random_scene() -> HittableList {
     let material1: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
     world.push(Arc::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, &material1)));
 
-    let material2: Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let material2: Arc<dyn Material> = Arc::new(Lambertian::new_color(Color::new(0.4, 0.2, 0.1)));
     world.push(Arc::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, &material2)));
 
     let material3: Arc<dyn Material> = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.05));
     world.push(Arc::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, &material3)));
 
     world
+}
+
+fn two_spheres() -> HittableList {
+    let mut objects = HittableList::new();
+
+    let checker_texture: Arc<dyn Texture> = Arc::new(CheckerTexture::new(Color::new(0.2, 0.3, 0.1), Color::new(0.9, 0.9, 0.9)));
+    let checker_material: Arc<dyn Material> = Arc::new(Lambertian::new_texture(&checker_texture));
+    objects.push(Arc::new(Sphere::new(Point3::new(0.0, -10.0, 0.0), 10.0, &checker_material)));
+    objects.push(Arc::new(Sphere::new(Point3::new(0.0, 10.0, 0.0), 10.0, &checker_material)));
+
+    objects
 }
