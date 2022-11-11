@@ -92,6 +92,16 @@ impl Vec3 {
 
         r_out_perp + r_out_parallel
     }
+
+    // TEMP SOLUTION!
+    pub fn idx(&self, index: usize) -> f64 {
+        match index {
+            0 => return self.x,
+            1 => return self.y,
+            2 => return self.z,
+            _ => panic!()
+        };
+    }
 }
 
 

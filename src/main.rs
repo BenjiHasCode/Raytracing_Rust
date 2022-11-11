@@ -6,6 +6,8 @@ mod sphere;
 mod camera;
 mod util;
 mod material;
+mod aabb;
+mod bvh;
 
 use std::f64::INFINITY;
 use std::sync::Arc;
@@ -115,7 +117,7 @@ fn random_scene() -> HittableList {
     let mut world = HittableList::new();
 
     let ground_material: Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
-    world.push(Box::new(Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, &ground_material)));
+    world.push(Arc::new(Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, &ground_material)));
 
 
     for a in -11..11 {
@@ -131,32 +133,32 @@ fn random_scene() -> HittableList {
                     let albedo = Color::random(0.0, 1.0) * Color::random(0.0, 1.0);
                     sphere_material = Arc::new(Lambertian::new(albedo));
                     let center2 = center + Vec3::new(0.0, random_double(0.0, 0.5), 0.0);
-                    world.push(Box::new(MovingSphere::new(center, center2, 0.0, 1.0, 0.2, &sphere_material)))
+                    world.push(Arc::new(MovingSphere::new(center, center2, 0.0, 1.0, 0.2, &sphere_material)))
                 }
                 else if choose_mat < 0.95 {
                     // metal
                     let albedo = Color::random(0.5, 1.0);
                     let fuzz = random_double(0.0, 0.5);
                     sphere_material = Arc::new(Metal::new(albedo, fuzz));
-                    world.push(Box::new(Sphere::new(center, 0.2, &sphere_material)))
+                    world.push(Arc::new(Sphere::new(center, 0.2, &sphere_material)))
                 }
                 else {
                     // glass
                     sphere_material = Arc::new(Dielectric::new(1.5));
-                    world.push(Box::new(Sphere::new(center, 0.2, &sphere_material)))
+                    world.push(Arc::new(Sphere::new(center, 0.2, &sphere_material)))
                 }
             }
         }
     }
 
     let material1: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
-    world.push(Box::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, &material1)));
+    world.push(Arc::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, &material1)));
 
     let material2: Arc<dyn Material> = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
-    world.push(Box::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, &material2)));
+    world.push(Arc::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, &material2)));
 
     let material3: Arc<dyn Material> = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.05));
-    world.push(Box::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, &material3)));
+    world.push(Arc::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, &material3)));
 
     world
 }
