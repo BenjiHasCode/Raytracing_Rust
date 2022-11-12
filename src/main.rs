@@ -9,6 +9,7 @@ mod material;
 mod aabb;
 mod bvh;
 mod texture;
+mod perlin;
 
 use std::f64::INFINITY;
 use std::sync::Arc;
