@@ -66,7 +66,7 @@ impl Hittable for Sphere {
         let outward_normal = (rec.p - self.center) / self.radius;
         rec.set_face_normal(r, &outward_normal);
 
-        let (u, v) = Sphere::get_sphere_uv(&outward_normal);
+        let (u, v) = Sphere::get_sphere_uv(&rec.normal);
         rec.u = u;
         rec.v = v;
 
