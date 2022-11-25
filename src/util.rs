@@ -24,3 +24,7 @@ pub fn clamp(x: f64, min: f64, max: f64) -> f64 {
     }
     x
 }
+
+pub fn calculate_percentage(a: usize, b: usize) -> usize {
+    (b as f64 / a as f64 * 100.0) as usize
+}

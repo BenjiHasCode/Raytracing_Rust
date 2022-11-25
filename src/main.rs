@@ -12,7 +12,7 @@ mod texture;
 mod perlin;
 
 use std::f64::INFINITY;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 use hittable::Hittable;
@@ -28,7 +28,7 @@ use crate::camera::Camera;
 use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
 use crate::material::metal::Metal;
-use crate::util::random_double;
+use crate::util::{random_double, calculate_percentage};
 use crate::vec3::Vec3;
 
 
@@ -98,6 +98,9 @@ fn main() {
     let start = Instant::now();
     // Render
     let mut bytes = vec![0u8; HEIGHT as usize * WIDTH as usize * BYTES_PER_PIXEL];
+    let whole = bytes.len();
+    let current = Mutex::new(0);
+    let percent = Mutex::new(0);
     bytes
         // take mutable chunk of three items
         .par_chunks_mut(BYTES_PER_PIXEL)
@@ -120,6 +123,14 @@ fn main() {
             chunk[0] = r;
             chunk[1] = g;
             chunk[2] = b;
+
+            // calculate percentage done
+            *current.lock().unwrap() += BYTES_PER_PIXEL;
+            let temp_percent = calculate_percentage(whole, *current.lock().unwrap());
+            if *percent.lock().unwrap() != temp_percent {
+                *percent.lock().unwrap() = temp_percent;
+                println!("{}%", temp_percent);
+            }
         });
 
     // Print how long it took to render
