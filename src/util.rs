@@ -11,7 +11,7 @@ pub fn random_double(min: f64, max: f64) -> f64 {
 }
 
 // returns a random u32 in [min, max]
-pub fn random_int(min: u32, max: u32) -> u32{
+pub fn random_int(min: usize, max: usize) -> usize{
     rand::thread_rng().gen_range(min..max+1)
 }
 
