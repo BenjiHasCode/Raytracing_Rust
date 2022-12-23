@@ -224,7 +224,7 @@ fn two_spheres() -> HittableList {
 fn two_perlin_spheres() -> HittableList {
     let mut objects = HittableList::new();
 
-    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new_scaled(4.0));
+    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new(4.0));
     let permat: Arc<dyn Material> = Arc::new(Lambertian::new_texture(&pertext));
     objects.push(Arc::new(Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, &permat)));
     objects.push(Arc::new(Sphere::new(Point3::new(0.0, 2.0, 0.0), 2.0, &permat)));

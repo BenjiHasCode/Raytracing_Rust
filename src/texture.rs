@@ -56,11 +56,7 @@ pub struct NoiseTexture {
 }
 
 impl NoiseTexture {
-    pub fn new() -> Self {
-        Self { noise: Perlin::new(), scale: 1.0}
-    }
-
-    pub fn new_scaled(scale: f64) -> Self {
+    pub fn new(scale: f64) -> Self {
         Self { noise: Perlin::new(), scale }
     }
 }

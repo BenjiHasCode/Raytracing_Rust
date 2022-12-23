@@ -1,19 +1,19 @@
-use crate::{vec3::{Point3, Vec3}, util::{random_int, random_double}};
+use crate::{vec3::{Point3, Vec3}, util::random_int};
+
+const POINT_COUNT: usize = 256;
 
 pub struct Perlin {
-    ranvec: [Vec3; Perlin::POINT_COUNT],
-    perm_x: [usize; Perlin::POINT_COUNT],
-    perm_y: [usize; Perlin::POINT_COUNT],
-    perm_z: [usize; Perlin::POINT_COUNT]
+    ranvec: [Vec3; POINT_COUNT],
+    perm_x: [usize; POINT_COUNT],
+    perm_y: [usize; POINT_COUNT],
+    perm_z: [usize; POINT_COUNT]
 }
 
 impl Perlin {
-    const POINT_COUNT: usize = 256;
-
     pub fn new() -> Self {
-        let mut ranvec = [Vec3 {x: 0.0, y:0.0, z:0.0}; Perlin::POINT_COUNT];
-        for i in 0..Perlin::POINT_COUNT {
-            ranvec[i] = Vec3::random(-1.0, 1.0).unit_vector();
+        let mut ranvec = [Vec3 {x: 0.0, y:0.0, z:0.0}; POINT_COUNT];
+        for i in &mut ranvec {
+            *i = Vec3::random(-1.0, 1.0).unit_vector();
         }
 
         let perm_x = Perlin::perlin_generate_perm();
@@ -23,8 +23,8 @@ impl Perlin {
         Perlin { ranvec, perm_x, perm_y, perm_z }
     }
 
-    fn perlin_generate_perm() -> [usize; Perlin::POINT_COUNT] {
-        let mut p = [0; Perlin::POINT_COUNT];
+    fn perlin_generate_perm() -> [usize; POINT_COUNT] {
+        let mut p = [0; POINT_COUNT];
         for (i, p) in p.iter_mut().enumerate() {
             *p = i;
         }
@@ -33,9 +33,9 @@ impl Perlin {
         p
     }
 
-    fn permute(p: &mut [usize; Perlin::POINT_COUNT]) {
-        for i in p.len()..0 {
-            let target = random_int(0, i as u32) as usize;
+    fn permute(p: &mut [usize; POINT_COUNT]) {
+        for i in (0..p.len()).rev() {
+            let target = random_int(0, i);
             p.swap(i, target);
         }
     }
@@ -49,14 +49,15 @@ impl Perlin {
         let k = p.z.floor() as usize;
 
         let mut c = [[[Vec3 {x: 0.0, y: 0.0, z: 0.0}; 2]; 2]; 2];   // man this is not easy on the eyes
+        const MASK: usize = POINT_COUNT - 1;
 
         for di in 0..2 {
             for dj in 0..2 {
                 for dk in 0..2 {
                     c[di][dj][dk] = self.ranvec[
-                        self.perm_x[(i+di) & 255] ^
-                        self.perm_y[(j+dj) & 255] ^
-                        self.perm_z[(k+dk) & 255]
+                        self.perm_x[(i+di) & MASK] ^
+                        self.perm_y[(j+dj) & MASK] ^
+                        self.perm_z[(k+dk) & MASK]
                     ];
                 }
             }

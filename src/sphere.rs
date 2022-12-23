@@ -1,4 +1,4 @@
-use std::{sync::Arc, f64::consts::PI};
+use std::{sync::Arc, f64::consts::{self, PI}};
 
 use crate::{hittable::{Hittable, HitRecord}, vec3::{Point3, Vec3}, ray::Ray, material::Material, aabb::AABB};
 
@@ -21,8 +21,8 @@ impl Sphere {
         //  <0 1 0> yields <0.50 1.00>      <0 -1 0> yields <0.50 0.00>
         //  <0 0 1> yields <0.25 0.50>      <0 0 -1> yields <0.75 0.50>
 
-        let theta = f64::acos(-p.y);
-        let phi = f64::atan2(-p.z, p.x) + PI;
+        let theta = -p.y.acos();
+        let phi = -p.z.atan2(p.x) + consts::PI;
 
         let u = phi / (2.0*PI);
         let v = theta / PI;
