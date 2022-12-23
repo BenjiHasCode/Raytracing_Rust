@@ -17,6 +17,13 @@ impl HitRecord {
         self.front_face = Vec3::dot(&r.direction(), outward_normal) < 0.0;
         self.normal = if self.front_face { *outward_normal } else { -*outward_normal };
     }
+
+    pub fn get_face_normal(r: &Ray, outward_normal: &Vec3) -> (bool, Vec3) {
+        let front_face = Vec3::dot(&r.direction(), outward_normal) < 0.0;
+        let normal = if front_face { *outward_normal } else { -*outward_normal };
+
+        (front_face, normal)
+    }
 }
 
 pub trait Hittable : Send + Sync {

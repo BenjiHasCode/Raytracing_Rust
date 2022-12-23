@@ -37,7 +37,7 @@ fn main() {
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
     const WIDTH: u32 = 400*2;
     const HEIGHT: u32 = (WIDTH as f64 / ASPECT_RATIO) as u32;
-    const SAMPLES_PER_PIXEL: u32 = 50;
+    const SAMPLES_PER_PIXEL: u32 = 100;
     const MAX_DEPTH: u32 = 50;
     const BYTES_PER_PIXEL: usize = 3;
 
@@ -224,7 +224,7 @@ fn two_spheres() -> HittableList {
 fn two_perlin_spheres() -> HittableList {
     let mut objects = HittableList::new();
 
-    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new());
+    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new_scaled(4.0));
     let permat: Arc<dyn Material> = Arc::new(Lambertian::new_texture(&pertext));
     objects.push(Arc::new(Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, &permat)));
     objects.push(Arc::new(Sphere::new(Point3::new(0.0, 2.0, 0.0), 2.0, &permat)));
