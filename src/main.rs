@@ -19,7 +19,7 @@ use hittable::Hittable;
 use hittable_list::HittableList;
 use ray::Ray;
 use rayon::prelude::*;
-use texture::{CheckerTexture, Texture, NoiseTexture};
+use texture::{CheckerTexture, Texture, NoiseTexture, ImageTexture};
 use vec3::{Point3, Color};
 use sphere::{Sphere, MovingSphere};
 use material::Material;
@@ -35,9 +35,9 @@ use crate::vec3::Vec3;
 fn main() {
     // Image
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
-    const WIDTH: u32 = 400*2;
+    const WIDTH: u32 = 1920*2;
     const HEIGHT: u32 = (WIDTH as f64 / ASPECT_RATIO) as u32;
-    const SAMPLES_PER_PIXEL: u32 = 100;
+    const SAMPLES_PER_PIXEL: u32 = 1;
     const MAX_DEPTH: u32 = 50;
     const BYTES_PER_PIXEL: usize = 3;
 
@@ -50,7 +50,7 @@ fn main() {
     let vfov;
     let mut aperture = 0.0;
     // Camera
-    let scene = 3;
+    let scene = 1;
     match scene {
         1 => {
             world = random_scene();
@@ -67,6 +67,12 @@ fn main() {
         },
         3 => {
             world = two_perlin_spheres();
+            look_from = Point3::new(13.0, 2.0, 3.0);
+            look_at = Point3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+        },
+        4 => {
+            world = earth();
             look_from = Point3::new(13.0, 2.0, 3.0);
             look_at = Point3::new(0.0, 0.0, 0.0);
             vfov = 20.0;
@@ -228,6 +234,16 @@ fn two_perlin_spheres() -> HittableList {
     let permat: Arc<dyn Material> = Arc::new(Lambertian::new_texture(&pertext));
     objects.push(Arc::new(Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, &permat)));
     objects.push(Arc::new(Sphere::new(Point3::new(0.0, 2.0, 0.0), 2.0, &permat)));
+
+    objects
+}
+
+fn earth() -> HittableList {
+    let mut objects = HittableList::new();
+
+    let earth_texture: Arc<dyn Texture> = Arc::new(ImageTexture::new("./resources/earthmap2.jpg"));
+    let earth_material: Arc<dyn Material> = Arc::new(Lambertian::new_texture(&earth_texture));
+    objects.push(Arc::new(Sphere::new(Point3::new(0.0, 0.0, 0.0), 2.0, &earth_material)));
 
     objects
 }

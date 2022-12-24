@@ -44,11 +44,11 @@ impl Perlin {
         let u = p.x - p.x.floor();
         let v = p.y - p.y.floor();
         let w = p.z - p.z.floor();
-        let i = p.x.floor() as usize;
-        let j = p.y.floor() as usize;
-        let k = p.z.floor() as usize;
+        let i = (p.x.floor() as i32) as usize;
+        let j = (p.y.floor() as i32) as usize;
+        let k = (p.z.floor() as i32) as usize;
 
-        let mut c = [[[Vec3 {x: 0.0, y: 0.0, z: 0.0}; 2]; 2]; 2];   // man this is not easy on the eyes
+        let mut c = [[[Vec3 {x: 0.0, y: 0.0, z: 0.0}; 2]; 2]; 2];
         const MASK: usize = POINT_COUNT - 1;
 
         for di in 0..2 {
