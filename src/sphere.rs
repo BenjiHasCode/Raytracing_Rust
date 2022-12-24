@@ -1,4 +1,4 @@
-use std::{sync::Arc, f64::consts::{self, PI}};
+use std::{sync::Arc, f64::consts::PI};
 
 use crate::{hittable::{Hittable, HitRecord}, vec3::{Point3, Vec3}, ray::Ray, material::Material, aabb::AABB};
 

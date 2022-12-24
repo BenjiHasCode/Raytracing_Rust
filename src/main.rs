@@ -50,7 +50,7 @@ fn main() {
     let vfov;
     let mut aperture = 0.0;
     // Camera
-    let scene = 1;
+    let scene = 4;
     match scene {
         1 => {
             world = random_scene();
@@ -241,7 +241,7 @@ fn two_perlin_spheres() -> HittableList {
 fn earth() -> HittableList {
     let mut objects = HittableList::new();
 
-    let earth_texture: Arc<dyn Texture> = Arc::new(ImageTexture::new("./resources/earthmap2.jpg"));
+    let earth_texture: Arc<dyn Texture> = Arc::new(ImageTexture::new("./resources/earthmap.jpg"));
     let earth_material: Arc<dyn Material> = Arc::new(Lambertian::new_texture(&earth_texture));
     objects.push(Arc::new(Sphere::new(Point3::new(0.0, 0.0, 0.0), 2.0, &earth_material)));
 

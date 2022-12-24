@@ -1,8 +1,8 @@
-use std::{sync::Arc, vec};
+use std::sync::Arc;
 
 use image::RgbImage;
 
-use crate::{vec3::{Color, Point3}, perlin::Perlin, util::clamp};
+use crate::{vec3::{Color, Point3}, perlin::Perlin};
 
 pub trait Texture: Send + Sync {
     fn value(&self, u: f64, v: f64, p: &Point3) -> Color;
