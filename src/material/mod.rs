@@ -4,6 +4,7 @@ pub mod lambertian;
 pub mod metal;
 pub mod dielectric;
 pub mod diffuse_light;
+pub mod isotropic;
 
 pub trait Material : Send + Sync {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>;
