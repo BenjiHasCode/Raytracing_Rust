@@ -11,6 +11,8 @@ mod bvh;
 mod texture;
 mod perlin;
 mod xy_rect;
+mod yz_rect;
+mod xz_rect;
 
 use std::f64::INFINITY;
 use std::sync::{Arc, Mutex};
@@ -26,6 +28,8 @@ use vec3::{Point3, Color};
 use sphere::{Sphere, MovingSphere};
 use material::Material;
 use xy_rect::XYRect;
+use xz_rect::XZRect;
+use yz_rect::YZRect;
 
 use crate::camera::Camera;
 use crate::material::dielectric::Dielectric;
@@ -37,10 +41,10 @@ use crate::vec3::Vec3;
 
 fn main() {
     // Image
-    const ASPECT_RATIO: f64 = 16.0 / 9.0;
-    const WIDTH: u32 = 1920;
-    const HEIGHT: u32 = (WIDTH as f64 / ASPECT_RATIO) as u32;
-    const SAMPLES_PER_PIXEL: u32 = 10000;
+    let mut aspect_ratio: f64 = 16.0 / 9.0;
+    let mut width: u32 = 1920;
+    let mut height: u32 = (width as f64 / aspect_ratio) as u32;
+    const SAMPLES_PER_PIXEL: u32 = 1000;
     const MAX_DEPTH: u32 = 50;
     const BYTES_PER_PIXEL: usize = 3;
 
@@ -54,7 +58,7 @@ fn main() {
     let mut aperture = 0.0;
     let mut background = Color::new(0.0, 0.0, 0.0);
     // Camera
-    let scene = 5;
+    let scene = 6;
     match scene {
         1 => {
             world = random_scene();
@@ -92,6 +96,16 @@ fn main() {
             look_at = Point3::new(0.0, 2.0, 0.0);
             vfov = 20.0;
         },
+        6 => {
+            world = cornell_box();
+            aspect_ratio = 1.0;
+            width = 600;
+            height = (width as f64 / aspect_ratio) as u32;
+            background = Color::new(0.0, 0.0, 0.0);
+            look_from = Point3::new(278.0, 278.0, -800.0);
+            look_at = Point3::new(278.0, 278.0, 0.0);
+            vfov = 40.0;
+        }
         _ => {
             world = random_scene();
             look_from = Point3::new(13.0, 2.0, 3.0);
@@ -108,7 +122,7 @@ fn main() {
         look_at,
         vup,
         vfov,
-        ASPECT_RATIO,
+        aspect_ratio,
         aperture,
         dist_to_focus,
         0.0,
@@ -118,7 +132,7 @@ fn main() {
 
     let start = Instant::now();
     // Render
-    let mut bytes = vec![0u8; HEIGHT as usize * WIDTH as usize * BYTES_PER_PIXEL];
+    let mut bytes = vec![0u8; height as usize * width as usize * BYTES_PER_PIXEL];
     let whole = bytes.len();
     let current = Mutex::new(0);
     let percent = Mutex::new(0);
@@ -130,13 +144,13 @@ fn main() {
         // enumerate() changes the closure argument from |item| => |(index, item)|
         .enumerate()
         .for_each(|(idx, chunk)| {
-            let y = (HEIGHT as usize - idx / WIDTH as usize) as f64;
-            let x = (idx % WIDTH as usize) as f64;
+            let y = (height as usize - idx / width as usize) as f64;
+            let x = (idx % width as usize) as f64;
             let mut pixel_color = Color::new(0.0, 0.0, 0.0);
 
             for _ in 0..SAMPLES_PER_PIXEL {
-                let u = (x + random_double(0.0, 1.0)) / (WIDTH-1) as f64;
-                let v = (y + random_double(0.0, 1.0)) / (HEIGHT-1) as f64;
+                let u = (x + random_double(0.0, 1.0)) / (width-1) as f64;
+                let v = (y + random_double(0.0, 1.0)) / (height-1) as f64;
                 let r = cam.get_ray(u, v);
                 pixel_color += ray_color(&r, &background, &world, MAX_DEPTH);
             }
@@ -159,7 +173,7 @@ fn main() {
     println!("Render took: {} seconds", duration);
     
     // Save image
-    image::save_buffer("render.png", &bytes, WIDTH, HEIGHT, image::ColorType::Rgb8).unwrap();
+    image::save_buffer("render.png", &bytes, width, height, image::ColorType::Rgb8).unwrap();
 }
 
 fn ray_color(r: &Ray, background: &Color, world: &HittableList, depth: u32) -> Color {
@@ -274,6 +288,25 @@ fn simple_light() -> HittableList {
     let color = Color::new(4.0, 4.0, 4.0);
     let difflight: Arc<dyn Material> = Arc::new(DiffuseLight::new_color(color));
     objects.push(Arc::new(XYRect::new(3.0, 5.0, 1.0, 3.0, -2.0, &difflight)));
+
+    objects
+}
+
+fn cornell_box() -> HittableList {
+    let mut objects = HittableList::new();
+
+    let red: Arc<dyn Material> = Arc::new(Lambertian::new_color(Color::new(0.65, 0.05, 0.05)));
+    let white: Arc<dyn Material> = Arc::new(Lambertian::new_color(Color::new(0.73, 0.73, 0.73)));
+    let green: Arc<dyn Material> = Arc::new(Lambertian::new_color(Color::new(0.12, 0.45, 0.15)));
+    
+    let light: Arc<dyn Material> = Arc::new(DiffuseLight::new_color(Color::new(15.0, 15.0, 15.0)));
+
+    objects.push(Arc::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, &green)));
+    objects.push(Arc::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, &red)));
+    objects.push(Arc::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, &light)));
+    objects.push(Arc::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, &white)));
+    objects.push(Arc::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, &white)));
+    objects.push(Arc::new(XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, &white)));
 
     objects
 }
