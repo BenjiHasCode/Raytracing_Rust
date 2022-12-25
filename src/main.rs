@@ -14,6 +14,8 @@ mod xy_rect;
 mod yz_rect;
 mod xz_rect;
 mod r#box;
+mod translate;
+mod rotate_y;
 use std::f64::INFINITY;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
@@ -23,7 +25,9 @@ use hittable_list::HittableList;
 use material::diffuse_light::DiffuseLight;
 use ray::Ray;
 use rayon::prelude::*;
+use rotate_y::RotateY;
 use texture::{CheckerTexture, Texture, NoiseTexture, ImageTexture};
+use translate::Translate;
 use vec3::{Point3, Color};
 use sphere::{Sphere, MovingSphere};
 use material::Material;
@@ -45,7 +49,7 @@ fn main() {
     let mut aspect_ratio: f64 = 16.0 / 9.0;
     let mut width: u32 = 1920;
     let mut height: u32 = (width as f64 / aspect_ratio) as u32;
-    const SAMPLES_PER_PIXEL: u32 = 1000;
+    const SAMPLES_PER_PIXEL: u32 = 10000;
     const MAX_DEPTH: u32 = 50;
     const BYTES_PER_PIXEL: usize = 3;
 
@@ -311,8 +315,15 @@ fn cornell_box() -> HittableList {
     objects.push(Arc::new(XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, &white)));
 
     // boxes
-    objects.push(Arc::new(Box::new(&Point3::new(130.0, 0.0, 65.0), &Point3::new(295.0, 165.0, 230.0), &white)));
-    objects.push(Arc::new(Box::new(&Point3::new(265.0, 0.0, 295.0), &Point3::new(430.0, 330.0, 460.0), &white)));
+    let box1: Arc<dyn Hittable> = Arc::new(Box::new(&Point3::new(0.0, 0.0, 0.0), &Point3::new(165.0, 330.0, 165.0), &white));
+    let box1: Arc<dyn Hittable> = Arc::new(RotateY::new(&box1, 15.0));
+    let box1 = Arc::new(Translate::new(&box1, &Vec3::new(265.0, 0.0, 295.0)));
+    objects.push(box1);
+
+    let box2: Arc<dyn Hittable> = Arc::new(Box::new(&Point3::new(0.0, 0.0, 0.0), &Point3::new(165.0, 165.0, 165.0), &white));
+    let box2: Arc<dyn Hittable> = Arc::new(RotateY::new(&box2, -18.0));
+    let box2 = Arc::new(Translate::new(&box2, &Vec3::new(130.0, 0.0, 65.0)));
+    objects.push(box2);
 
     objects
 }
