@@ -10,6 +10,7 @@ mod aabb;
 mod bvh;
 mod texture;
 mod perlin;
+mod xy_rect;
 
 use std::f64::INFINITY;
 use std::sync::{Arc, Mutex};
@@ -17,12 +18,14 @@ use std::time::Instant;
 
 use hittable::Hittable;
 use hittable_list::HittableList;
+use material::diffuse_light::DiffuseLight;
 use ray::Ray;
 use rayon::prelude::*;
-use texture::{CheckerTexture, Texture, NoiseTexture, ImageTexture};
+use texture::{CheckerTexture, Texture, NoiseTexture, ImageTexture, SolidColor};
 use vec3::{Point3, Color};
 use sphere::{Sphere, MovingSphere};
 use material::Material;
+use xy_rect::XYRect;
 
 use crate::camera::Camera;
 use crate::material::dielectric::Dielectric;
@@ -35,9 +38,9 @@ use crate::vec3::Vec3;
 fn main() {
     // Image
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
-    const WIDTH: u32 = 1920*2;
+    const WIDTH: u32 = 1920;
     const HEIGHT: u32 = (WIDTH as f64 / ASPECT_RATIO) as u32;
-    const SAMPLES_PER_PIXEL: u32 = 1;
+    const SAMPLES_PER_PIXEL: u32 = 10000;
     const MAX_DEPTH: u32 = 50;
     const BYTES_PER_PIXEL: usize = 3;
 
@@ -49,11 +52,13 @@ fn main() {
     let look_at;
     let vfov;
     let mut aperture = 0.0;
+    let mut background = Color::new(0.0, 0.0, 0.0);
     // Camera
-    let scene = 4;
+    let scene = 5;
     match scene {
         1 => {
             world = random_scene();
+            background = Color::new(0.7, 0.8, 1.0);
             look_from = Point3::new(13.0, 2.0, 3.0);
             look_at = Point3::new(0.0, 0.0, 0.0);
             vfov = 20.0;
@@ -61,20 +66,30 @@ fn main() {
         },
         2 => {
             world = two_spheres();
+            background = Color::new(0.7, 0.8, 1.0);
             look_from = Point3::new(13.0, 2.0, 3.0);
             look_at = Point3::new(0.0, 0.0, 0.0);
             vfov = 20.0;
         },
         3 => {
             world = two_perlin_spheres();
+            background = Color::new(0.7, 0.8, 1.0);
             look_from = Point3::new(13.0, 2.0, 3.0);
             look_at = Point3::new(0.0, 0.0, 0.0);
             vfov = 20.0;
         },
         4 => {
             world = earth();
+            background = Color::new(0.7, 0.8, 1.0);
             look_from = Point3::new(13.0, 2.0, 3.0);
             look_at = Point3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+        },
+        5 => {
+            world = simple_light();
+            background = Color::new(0.0, 0.0, 0.0);
+            look_from = Point3::new(26.0, 3.0, 6.0);
+            look_at = Point3::new(0.0, 2.0, 0.0);
             vfov = 20.0;
         },
         _ => {
@@ -123,7 +138,7 @@ fn main() {
                 let u = (x + random_double(0.0, 1.0)) / (WIDTH-1) as f64;
                 let v = (y + random_double(0.0, 1.0)) / (HEIGHT-1) as f64;
                 let r = cam.get_ray(u, v);
-                pixel_color += ray_color(&r, &world, MAX_DEPTH);
+                pixel_color += ray_color(&r, &background, &world, MAX_DEPTH);
             }
             let (r, g, b) = pixel_color.to_u8_rgb(SAMPLES_PER_PIXEL);
             chunk[0] = r;
@@ -147,21 +162,21 @@ fn main() {
     image::save_buffer("render.png", &bytes, WIDTH, HEIGHT, image::ColorType::Rgb8).unwrap();
 }
 
-fn ray_color(r: &Ray, world: &HittableList, depth: u32) -> Color {
+fn ray_color(r: &Ray, background: &Color, world: &HittableList, depth: u32) -> Color {
     if depth == 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
 
     if let Some(rec) = world.hit(r, 0.001, INFINITY) {
+        let emitted = rec.material.emitted(rec.u, rec.v, &rec.p);
+
         if let Some((attenuation, scattered)) = rec.material.scatter(r, &rec) {
-            attenuation * ray_color(&scattered, world, depth - 1)
+            emitted + attenuation * ray_color(&scattered, background, world, depth - 1)
         } else {
-            Color::new(0.0, 0.0, 0.0)
+            emitted
         }
     } else {
-        let unit_direction = r.direction().unit_vector();
-        let t = 0.5*(unit_direction.y + 1.0);
-        (1.0-t)*Color::new(1.0, 1.0, 1.0) + t*Color::new(0.5, 0.7, 1.0)
+        *background
     }
 }
 
@@ -244,6 +259,21 @@ fn earth() -> HittableList {
     let earth_texture: Arc<dyn Texture> = Arc::new(ImageTexture::new("./resources/earthmap.jpg"));
     let earth_material: Arc<dyn Material> = Arc::new(Lambertian::new_texture(&earth_texture));
     objects.push(Arc::new(Sphere::new(Point3::new(0.0, 0.0, 0.0), 2.0, &earth_material)));
+
+    objects
+}
+
+fn simple_light() -> HittableList {
+    let mut objects = HittableList::new();
+
+    let pertext: Arc<dyn Texture> = Arc::new(NoiseTexture::new(4.0));
+    let permat: Arc<dyn Material> = Arc::new(Lambertian::new_texture(&pertext));
+    objects.push(Arc::new(Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, &permat)));
+    objects.push(Arc::new(Sphere::new(Point3::new(0.0, 2.0, 0.0), 2.0, &permat)));
+
+    let color = Color::new(4.0, 4.0, 4.0);
+    let difflight: Arc<dyn Material> = Arc::new(DiffuseLight::new_color(color));
+    objects.push(Arc::new(XYRect::new(3.0, 5.0, 1.0, 3.0, -2.0, &difflight)));
 
     objects
 }
