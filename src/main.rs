@@ -13,7 +13,7 @@ mod perlin;
 mod xy_rect;
 mod yz_rect;
 mod xz_rect;
-
+mod r#box;
 use std::f64::INFINITY;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
@@ -23,13 +23,14 @@ use hittable_list::HittableList;
 use material::diffuse_light::DiffuseLight;
 use ray::Ray;
 use rayon::prelude::*;
-use texture::{CheckerTexture, Texture, NoiseTexture, ImageTexture, SolidColor};
+use texture::{CheckerTexture, Texture, NoiseTexture, ImageTexture};
 use vec3::{Point3, Color};
 use sphere::{Sphere, MovingSphere};
 use material::Material;
 use xy_rect::XYRect;
 use xz_rect::XZRect;
 use yz_rect::YZRect;
+use r#box::Box;
 
 use crate::camera::Camera;
 use crate::material::dielectric::Dielectric;
@@ -301,12 +302,17 @@ fn cornell_box() -> HittableList {
     
     let light: Arc<dyn Material> = Arc::new(DiffuseLight::new_color(Color::new(15.0, 15.0, 15.0)));
 
+    // room
     objects.push(Arc::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, &green)));
     objects.push(Arc::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, &red)));
     objects.push(Arc::new(XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, &light)));
     objects.push(Arc::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, &white)));
     objects.push(Arc::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, &white)));
     objects.push(Arc::new(XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, &white)));
+
+    // boxes
+    objects.push(Arc::new(Box::new(&Point3::new(130.0, 0.0, 65.0), &Point3::new(295.0, 165.0, 230.0), &white)));
+    objects.push(Arc::new(Box::new(&Point3::new(265.0, 0.0, 295.0), &Point3::new(430.0, 330.0, 460.0), &white)));
 
     objects
 }
