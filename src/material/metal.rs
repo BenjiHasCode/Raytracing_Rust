@@ -1,4 +1,4 @@
-use crate::{vec3::{Color, Vec3}, ray::Ray, hittable::HitRecord};
+use crate::{vec3::{Color, Vec3}, ray::Ray, hit_record::HitRecord};
 
 use super::Material;
 

@@ -1,15 +1,17 @@
 use std::sync::Arc;
 
 use crate::aabb::AABB;
-use crate::hittable::Hittable;
-use crate::hittable::HitRecord;
+use crate::hit_record::HitRecord;
 use crate::ray::Ray;
+
+use super::Hittable;
+
 
 pub type HittableList = Vec<Arc<dyn Hittable>>;
 
 impl Hittable for HittableList {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        // initialize temp rec, hit anythin and closest
+        // initialize temp rec and closest_so_far
         let mut rec = None;
         let mut closest_so_far = t_max;
 

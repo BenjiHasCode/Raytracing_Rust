@@ -1,6 +1,9 @@
 use std::{sync::Arc, f64::{NEG_INFINITY, INFINITY}};
 
-use crate::{hittable::{Hittable, HitRecord}, material::{Material, isotropic::Isotropic}, vec3::{Color, Vec3}, texture::Texture, aabb::AABB, util::random_double};
+use crate::{material::{Material, isotropic::Isotropic}, vec3::{Color, Vec3}, util::random_double, aabb::AABB, hit_record::HitRecord, ray::Ray, texture::Texture};
+
+use super::Hittable;
+
 
 pub struct ConstantMedium {
     boundary: Arc<dyn Hittable>,
@@ -27,7 +30,7 @@ impl ConstantMedium {
 }
 
 impl Hittable for ConstantMedium {
-    fn hit(&self, r: &crate::ray::Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut rec1;
         let mut rec2;
 
@@ -71,8 +74,8 @@ impl Hittable for ConstantMedium {
         let normal = Vec3::new(1.0, 0.0, 0.0);   // arbitrary
         let front_face = true;                           // also arbitrary
         let mat_ptr = &self.phase_function;
-        let u = 0.0;    // arbitrary???
-        let v = 0.0;    // arbitrary???
+        let u = 0.0;    // arbitrary
+        let v = 0.0;    // arbitrary
 
         Some(HitRecord { t, p, normal, front_face, material: Arc::clone(mat_ptr), u, v})
     }

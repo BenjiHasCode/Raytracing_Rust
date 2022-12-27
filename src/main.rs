@@ -1,71 +1,43 @@
-mod vec3;
-mod ray;
-mod hittable_list;
-mod hittable;
-mod sphere;
-mod camera;
-mod util;
-mod material;
-mod aabb;
-mod bvh;
-mod texture;
-mod perlin;
-mod xy_rect;
-mod yz_rect;
-mod xz_rect;
-mod r#box;
-mod translate;
-mod rotate_y;
-mod constant_medium;
-use std::f64::INFINITY;
-use std::sync::{Arc, Mutex};
-use std::time::Instant;
+use std::{time::Instant, sync::{Mutex, Arc}, f64::INFINITY};
 
-use bvh::BvhNode;
-use constant_medium::ConstantMedium;
-use hittable::Hittable;
-use hittable_list::HittableList;
-use material::diffuse_light::DiffuseLight;
+use hittable::{hittable_list::HittableList, Hittable, sphere::Sphere, xy_rect::XYRect, yz_rect::YZRect, xz_rect::XZRect, rotate_y::RotateY, translate::Translate, constant_medium::ConstantMedium, bvh::BvhNode, r#box::Box, moving_sphere::MovingSphere};
+use material::{Material, lambertian::Lambertian, metal::Metal, dielectric::Dielectric, diffuse_light::DiffuseLight};
 use ray::Ray;
-use rayon::prelude::*;
-use rotate_y::RotateY;
-use texture::{CheckerTexture, Texture, NoiseTexture, ImageTexture};
-use translate::Translate;
-use vec3::{Point3, Color};
-use sphere::{Sphere, MovingSphere};
-use material::Material;
-use xy_rect::XYRect;
-use xz_rect::XZRect;
-use yz_rect::YZRect;
-use r#box::Box;
+use rayon::{slice::ParallelSliceMut, prelude::{IntoParallelIterator, IndexedParallelIterator, ParallelIterator}};
+use texture::{Texture, image::ImageTexture, noise::NoiseTexture, checker::CheckerTexture};
 
-use crate::camera::Camera;
-use crate::material::dielectric::Dielectric;
-use crate::material::lambertian::Lambertian;
-use crate::material::metal::Metal;
-use crate::util::{random_double, calculate_percentage};
-use crate::vec3::Vec3;
+use crate::{vec3::{Color, Point3, Vec3}, camera::Camera, util::{random_double, calculate_percentage}};
 
+mod vec3;
+mod util;
+mod ray;
+mod perlin;
+mod hit_record;
+mod camera;
+mod aabb;
+mod texture;
+mod material;
+mod hittable;
 
 fn main() {
     // Image
     let mut aspect_ratio: f64 = 16.0 / 9.0;
     let mut width: u32 = 1920;
     let mut height: u32 = (width as f64 / aspect_ratio) as u32;
-    const SAMPLES_PER_PIXEL: u32 = 10;
+    const SAMPLES_PER_PIXEL: u32 = 1;
     const MAX_DEPTH: u32 = 50;
     const BYTES_PER_PIXEL: usize = 3;
 
     // World
     let world;
 
-
+    // Camera
     let look_from;
     let look_at;
     let vfov;
     let mut aperture = 0.0;
-    let mut background = Color::new(0.0, 0.0, 0.0);
-    // Camera
+    let background;
+
     let scene = 8;
     match scene {
         1 => {
@@ -408,7 +380,6 @@ fn final_scene() -> HittableList {
     }
 
     let mut objects = HittableList::new();
-    // TODO check
     let len = boxes1.len();
     objects.push(Arc::new(BvhNode::new(&mut boxes1, 0, len, 0.0, 1.0)));
 
@@ -428,7 +399,6 @@ fn final_scene() -> HittableList {
     let boundary: Arc<dyn Hittable> = Arc::new(Sphere::new(Point3::new(360.0, 150.0, 145.0), 70.0, &d_mat));
     objects.push(boundary.clone());
     objects.push(Arc::new(ConstantMedium::new(&boundary, 0.2, Color::new(0.2, 0.4, 0.9))));
-    //boundary = make_shared<sphere>(point3(0, 0, 0), 5000, make_shared<dielectric>(1.5));
     let boundary: Arc<dyn Hittable> = Arc::new(Sphere::new(Point3::new(0.0, 0.0, 0.0), 5000.0, &d_mat));
     objects.push(Arc::new(ConstantMedium::new(&boundary, 0.0001, Color::new(1.0, 1.0, 1.0))));
 

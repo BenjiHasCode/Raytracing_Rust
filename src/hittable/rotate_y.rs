@@ -1,12 +1,13 @@
 use std::{sync::Arc, f64::{INFINITY, NEG_INFINITY}};
 
-use crate::{hittable::{Hittable, HitRecord}, aabb::AABB, util::degrees_to_radians, vec3::{Point3, Vec3}, ray::Ray};
+use crate::{aabb::AABB, util::degrees_to_radians, vec3::{Point3, Vec3}, ray::Ray, hit_record::HitRecord};
+
+use super::Hittable;
 
 pub struct RotateY {
     ptr: Arc<dyn Hittable>,
     sin_theta: f64,
     cos_theta: f64,
-  //  has_box: bool,    // why is this needed? it just returns the value in fn bounding_box after creating the box, so it should always be true no?
     bbox: AABB
 }
 
@@ -16,8 +17,6 @@ impl RotateY {
         let radians = degrees_to_radians(angle);
         let sin_theta = radians.sin();
         let cos_theta = radians.cos();
-        
-        // TODO THIS 
         let bbox = ptr.bounding_box(0.0, 1.0).unwrap();
 
         let mut min = Point3::new(INFINITY, INFINITY, INFINITY);
@@ -47,7 +46,7 @@ impl RotateY {
 
         let bbox = AABB::new(min, max);
 
-        Self { ptr, sin_theta, cos_theta, /*has_box: (), */bbox }
+        Self { ptr, sin_theta, cos_theta, bbox }
     }
 }
 

@@ -1,6 +1,9 @@
 use std::{sync::Arc, cmp::Ordering};
 
-use crate::{hittable::{Hittable, HitRecord}, aabb::AABB, hittable_list::HittableList, util::random_int, vec3::Vec3};
+use crate::{aabb::AABB, util::random_int, vec3::Vec3, hit_record::HitRecord, ray::Ray};
+
+use super::{hittable_list::HittableList, Hittable};
+
 
 pub struct BvhNode {
     left: Arc<dyn Hittable>,
@@ -87,7 +90,7 @@ impl BvhNode {
 }
 
 impl Hittable for BvhNode { // TODO THIS IS PROBABLY VERY ERROR PRONE!!!!!
-    fn hit(&self, r: &crate::ray::Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         if !self.bounding_box.hit(r, t_min, t_max) { return None }
         
         let hit_left = self.left.hit(r, t_min, t_max);

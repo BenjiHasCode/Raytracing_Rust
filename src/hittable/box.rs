@@ -1,14 +1,8 @@
 use std::sync::Arc;
 
-use crate::Point3;
-use crate::HittableList;
-use crate::aabb::AABB;
-use crate::hittable::HitRecord;
-use crate::hittable::Hittable;
-use crate::material::Material;
-use crate::xy_rect::XYRect;
-use crate::xz_rect::XZRect;
-use crate::yz_rect::YZRect;
+use crate::{vec3::Point3, material::Material, aabb::AABB, hit_record::HitRecord};
+
+use super::{hittable_list::HittableList, xy_rect::XYRect, xz_rect::XZRect, yz_rect::YZRect, Hittable};
 
 pub struct Box {
     box_min: Point3,
@@ -29,7 +23,6 @@ impl Box {
         sides.push(Arc::new(YZRect::new(p0.y, p1.y, p0.z, p1.z, p1.x, material)));
         sides.push(Arc::new(YZRect::new(p0.y, p1.y, p0.z, p1.z, p0.x, material)));
 
-        // TODO will references work here?
         Box { box_min: *p0, box_max: *p1, sides }
     }
 }
@@ -40,7 +33,6 @@ impl Hittable for Box {
     }
 
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<AABB> {
-        // TODO will this work? borrow checking stuff
         Some(AABB::new(self.box_min, self.box_max))
     }
 }

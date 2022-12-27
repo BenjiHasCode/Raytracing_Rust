@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{vec3::{Color, Vec3}, hittable::HitRecord, ray::Ray, texture::{Texture, SolidColor}};
+use crate::{vec3::{Color, Vec3}, ray::Ray, hit_record::HitRecord, texture::{Texture, solid_color::SolidColor}};
 
 use super::Material;
 

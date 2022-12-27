@@ -10,7 +10,7 @@ impl AABB {
         AABB { minimum, maximum }   // use pointers(references here?!?!?!)
     }
 
-    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> bool {//Option<HitRecord> {
+    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> bool {
         for a in 0..3 {
       //  (0..3).for_each(|a| {
             let inv_d = 1.0 / r.direction().idx(a);  // TEMP SOLUTION FIND WAY TO ACCESS IDX DIRECTLY INSTEAD OF MATCHING
@@ -28,12 +28,10 @@ impl AABB {
             let t_max = if t1 < t_max { t1 } else { t_max };
 
             if t_max <= t_min {
-         //       return None;
                 return false;
             }
         }
 
-       // Some(())
         true
     }
 

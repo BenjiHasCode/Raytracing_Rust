@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
-use crate::{hittable::{Hittable, HitRecord}, vec3::{Point3, Vec3}, ray::Ray, material::Material, aabb::AABB};
+use crate::{vec3::{Point3, Vec3}, ray::Ray, material::Material, aabb::AABB, hit_record::HitRecord};
+
+use super::Hittable;
 
 pub struct YZRect {
     pub material: Arc<dyn Material>,
